@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi:etc/webapi.xsd">
+    <route url="/V1/blog/posts" method="POST">
+        <service class="AlexPoletaev\Blog\Api\PostRepositoryInterface"
+                 method="save"/>
+        <resources>
+            <resource ref="anonymous"/>
+        </resources>
+    </route>
+    <route url="/V1/blog/posts/:id" method="DELETE">
+        <service class="AlexPoletaev\Blog\Api\PostRepositoryInterface"
+                 method="deleteById"/>
+        <resources>
+            <resource ref="anonymous"/>
+        </resources>
+    </route>
+    <route url="/V1/blog/posts/:id" method="GET">
+        <service class="AlexPoletaev\Blog\Api\PostRepositoryInterface"
+                 method="get"/>
+        <resources>
+            <resource ref="anonymous"/>
+        </resources>
+    </route>
+    <route url="/V1/blog/posts" method="GET">
+        <service class="AlexPoletaev\Blog\Api\PostRepositoryInterface"
+                 method="getList"/>
+        <resources>
+            <resource ref="anonymous"/>
+        </resources>
+    </route>
+</routes>

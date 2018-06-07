@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="AlexPoletaev\Blog\Api\Data\PostInterface"
+                type="AlexPoletaev\Blog\Model\Post"/>
+
+    <preference for="AlexPoletaev\Blog\Api\PostRepositoryInterface"
+                type="AlexPoletaev\Blog\Model\PostRepository"/>
+
+    <preference for="AlexPoletaev\Blog\Api\Data\PostSearchResultInterface"
+                type="Magento\Framework\Api\SearchResults" />
+
+    <type name="Magento\Framework\Console\CommandList">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="deploy_sample_data"
+                      xsi:type="object">AlexPoletaev\Blog\Console\Command\DeploySampleDataCommand</item>
+                <item name="remove_sample_data"
+                      xsi:type="object">AlexPoletaev\Blog\Console\Command\RemoveSampleDataCommand</item>
+            </argument>
+        </arguments>
+    </type>
+</config>
