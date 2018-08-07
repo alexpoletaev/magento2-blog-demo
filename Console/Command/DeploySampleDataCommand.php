@@ -4,8 +4,9 @@ namespace AlexPoletaev\Blog\Console\Command;
 use AlexPoletaev\Blog\Api\PostRepositoryInterface;
 use AlexPoletaev\Blog\Model\Post;
 use AlexPoletaev\Blog\Model\PostFactory;
-use Magento\User\Api\Data\UserInterface;
+use Magento\Framework\Console\Cli;
 use Magento\User\Model\User;
+use Magento\User\Model\UserFactory;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -35,24 +36,24 @@ class DeploySampleDataCommand extends Command
     private $postRepository;
 
     /**
-     * @var UserInterface
+     * @var UserFactory
      */
-    private $user;
+    private $userFactory;
 
     /**
      * @param PostFactory $postFactory
-     * @param PostRepositoryInterface $postRepository
-     * @param UserInterface $user
+     * @param PostRepositoryInterface\Proxy $postRepository
+     * @param UserFactory $userFactory
      */
     public function __construct(
         PostFactory $postFactory,
-        PostRepositoryInterface $postRepository,
-        UserInterface $user
+        PostRepositoryInterface\Proxy $postRepository,
+        UserFactory $userFactory
     ) {
         parent::__construct();
         $this->postFactory = $postFactory;
         $this->postRepository = $postRepository;
-        $this->user = $user;
+        $this->userFactory = $userFactory;
     }
 
     /**
@@ -85,10 +86,11 @@ class DeploySampleDataCommand extends Command
     {
         $username = $input->getArgument(self::ARGUMENT_USERNAME);
         /** @var User $user */
-        $user = $this->user->loadByUsername($username);
+        $user = $this->userFactory->create();
+        $user->loadByUsername($username);
         if (!$user->getId() && $output->getVerbosity() > 1) {
             $output->writeln('<error>User is not found</error>');
-            return null;
+            return Cli::RETURN_FAILURE;
         }
         $records = $input->getArgument(self::ARGUMENT_NUMBER_OF_RECORDS) ?: 3;
         for ($i = 1; $i <= (int)$records; $i++) {
@@ -102,5 +104,7 @@ class DeploySampleDataCommand extends Command
                 $output->writeln('<info>Post with the ID #' . $post->getId() . ' has been created.</info>');
             }
         }
+
+        return Cli::RETURN_SUCCESS;
     }
 }
