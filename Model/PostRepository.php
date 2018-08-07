@@ -10,8 +10,10 @@ use AlexPoletaev\Blog\Model\ResourceModel\Post\Collection as PostCollection;
 use AlexPoletaev\Blog\Model\ResourceModel\Post\CollectionFactory as PostCollectionFactory;
 use AlexPoletaev\Blog\Model\PostFactory;
 use Magento\Framework\Api\SearchCriteriaInterface;
+use Magento\Framework\Exception\CouldNotDeleteException;
+use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Framework\Exception\StateException;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class PostRepository
@@ -45,21 +47,29 @@ class PostRepository implements PostRepositoryInterface
     private $postSearchResultFactory;
 
     /**
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
      * @param PostResource $postResource
      * @param PostFactory $postFactory
      * @param PostCollectionFactory $postCollectionFactory
      * @param PostSearchResultInterfaceFactory $postSearchResultFactory
+     * @param LoggerInterface $logger
      */
     public function __construct(
         PostResource $postResource,
         PostFactory $postFactory,
         PostCollectionFactory $postCollectionFactory,
-        PostSearchResultInterfaceFactory $postSearchResultFactory
+        PostSearchResultInterfaceFactory $postSearchResultFactory,
+        LoggerInterface $logger
     ) {
         $this->postResource = $postResource;
         $this->postFactory = $postFactory;
         $this->postCollectionFactory = $postCollectionFactory;
         $this->postSearchResultFactory = $postSearchResultFactory;
+        $this->logger = $logger;
     }
 
     /**
@@ -107,24 +117,24 @@ class PostRepository implements PostRepositoryInterface
     /**
      * @param \AlexPoletaev\Blog\Api\Data\PostInterface $post
      * @return PostInterface
-     * @throws StateException
+     * @throws CouldNotSaveException
      */
     public function save(PostInterface $post)
     {
         try {
             /** @var Post $post */
             $this->postResource->save($post);
-            $this->registry[$post->getId()] = $this->get($post->getId());
         } catch (\Exception $exception) {
-            throw new StateException(__('Unable to save post #%1', $post->getId()));
+            $this->logger->critical($exception->getMessage());
+            throw new CouldNotSaveException(__('Unable to save post #%1', $post->getId()));
         }
-        return $this->registry[$post->getId()];
+        return $post;
     }
 
     /**
      * @param \AlexPoletaev\Blog\Api\Data\PostInterface $post
      * @return bool
-     * @throws StateException
+     * @throws CouldNotDeleteException
      */
     public function delete(PostInterface $post)
     {
@@ -133,7 +143,8 @@ class PostRepository implements PostRepositoryInterface
             $this->postResource->delete($post);
             unset($this->registry[$post->getId()]);
         } catch (\Exception $e) {
-            throw new StateException(__('Unable to remove post #%1', $post->getId()));
+            $this->logger->critical($e->getMessage());
+            throw new CouldNotDeleteException(__('Unable to remove post #%1', $post->getId()));
         }
 
         return true;
